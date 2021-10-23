@@ -1,0 +1,23 @@
+em : [push, workflow_dispatch]
+
+empregos :
+  construir :
+
+    roda em : windows-mais recente
+
+    passos :
+    - nome : Download
+      execute : Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+    - nome : Extrair
+      executar : Expand-Archive ngrok.zip
+    - nome : Auth
+      execute :. \ ngrok \ ngrok.exe authtoken $ Env: NGROK_AUTH_TOKEN
+      env :
+        NGROK_AUTH_TOKEN : $ {{secrets.NGROK_AUTH_TOKEN}}
+    - nome : Habilitar TS
+      executar : Set-ItemProperty -Path 'HKLM: \ System \ CurrentControlSet \ Control \ Terminal Server'-name "fDenyTSConnections" -Value 0
+    - execute : Enable-NetFirewallRule -DisplayGroup "Área de Trabalho Remota"
+    - executar : Set-ItemProperty -Path 'HKLM: \ System \ CurrentControlSet \ Control \ Terminal Server \ WinStations \ RDP-Tcp' -name "UserAuthentication" -Value 1
+    - execute : Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P @ ssw0rd!" -Force)
+    - nome : Criar túnel
+      execute :. \ ngrok \ ngrok.exe tcp 3389
